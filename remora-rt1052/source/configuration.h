@@ -78,4 +78,51 @@
 #define IN12_PORT	GPIO3
 #define IN12_PIN	20
 
+#define CIN_PORT 	GPIO4
+#define CIN_PIN		18
+#define XIN_PORT 	GPIO4
+#define XIN_PIN		17
+#define YIN_PORT 	GPIO4
+#define YIN_PIN		16
+#define ZIN_PORT 	GPIO4
+#define ZIN_PIN		15
+
+#define AIN_PORT 	GPIO4
+#define AIN_PIN		14
+#define X100IN_PORT	GPIO4
+#define X100IN_PIN	13
+#define X10IN_PORT	GPIO4
+#define X10IN_PIN	12
+#define EP_PORT		GPIO4
+#define EP_PIN		11
+
+#define WHA_PORT	GPIO3
+#define WHA_PIN		16
+#define WHB_PORT	GPIO3
+#define WHB_PIN		17
+#define INDEX_PORT	GPIO3
+#define INDEX_PIN	22
+
+// Outputs
+#define OUT1_PORT	GPIO4
+#define OUT1_PIN	2
+#define OUT2_PORT	GPIO4
+#define OUT2_PIN	1
+#define OUT3_PORT	GPIO4
+#define OUT3_PIN	3
+#define OUT4_PORT	GPIO4
+#define OUT4_PIN	4
+#define OUT5_PORT	GPIO4
+#define OUT5_PIN	5
+#define OUT6_PORT	GPIO4
+#define OUT6_PIN	6
+#define OUT7_PORT	GPIO4
+#define OUT7_PIN	7
+#define OUT8_PORT	GPIO4
+#define OUT8_PIN	8
+#define OUT9_PORT	GPIO4
+#define OUT9_PIN	9
+#define OUT10_PORT	GPIO4
+#define OUT10_PIN	10
+
 #endif
