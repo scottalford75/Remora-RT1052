@@ -86,6 +86,7 @@ void updateServoThread()
 {
 	monitorEthernet();
 	readInputs();
+	setOutputs();
 }
 
 
@@ -157,17 +158,41 @@ void readInputs()
 	txData.inputs |= !GPIO_PinRead(X100IN_PORT, X100IN_PIN) << 24;
 	txData.inputs |= !GPIO_PinRead(EP_PORT, EP_PIN) << 25;
 	txData.inputs |= !GPIO_PinRead(INDEX_PORT, INDEX_PIN) << 26;
+}
 
+void setOutputs()
+{
 	// Outputs
-	GPIO_PinWrite(OUT1_PORT, OUT1_PIN, rxData.outputs & (1 << 0));
-	GPIO_PinWrite(OUT2_PORT, OUT2_PIN, rxData.outputs & (1 << 1));
-	GPIO_PinWrite(OUT3_PORT, OUT3_PIN, rxData.outputs & (1 << 2));
-	GPIO_PinWrite(OUT4_PORT, OUT4_PIN, rxData.outputs & (1 << 3));
-	GPIO_PinWrite(OUT5_PORT, OUT5_PIN, rxData.outputs & (1 << 4));
-	GPIO_PinWrite(OUT6_PORT, OUT6_PIN, rxData.outputs & (1 << 5));
-	GPIO_PinWrite(OUT7_PORT, OUT7_PIN, rxData.outputs & (1 << 6));
-	GPIO_PinWrite(OUT8_PORT, OUT8_PIN, rxData.outputs & (1 << 7));
-	GPIO_PinWrite(OUT9_PORT, OUT9_PIN, rxData.outputs & (1 << 8));
-	GPIO_PinWrite(OUT10_PORT, OUT10_PIN, rxData.outputs & (1 << 9));
+	bool output;
+
+	output = rxData.outputs & (1 << 0);
+	GPIO_PinWrite(OUT1_PORT, OUT1_PIN, output);
+
+	output = rxData.outputs & (1 << 1);
+	GPIO_PinWrite(OUT2_PORT, OUT2_PIN, output);
+
+	output = rxData.outputs & (1 << 2);
+	GPIO_PinWrite(OUT3_PORT, OUT3_PIN, output);
+
+	output = rxData.outputs & (1 << 3);
+	GPIO_PinWrite(OUT4_PORT, OUT4_PIN, output);
+
+	output = rxData.outputs & (1 << 4);
+	GPIO_PinWrite(OUT5_PORT, OUT5_PIN, output);
+
+	output = rxData.outputs & (1 << 5);
+	GPIO_PinWrite(OUT6_PORT, OUT6_PIN, output);
+
+	output = rxData.outputs & (1 << 6);
+	GPIO_PinWrite(OUT7_PORT, OUT7_PIN, output);
+
+	output = rxData.outputs & (1 << 7);
+	GPIO_PinWrite(OUT8_PORT, OUT8_PIN, output);
+
+	output = rxData.outputs & (1 << 8);
+	GPIO_PinWrite(OUT9_PORT, OUT9_PIN, output);
+
+	output = rxData.outputs & (1 << 9);
+	GPIO_PinWrite(OUT10_PORT, OUT10_PIN, output);
 
 }
