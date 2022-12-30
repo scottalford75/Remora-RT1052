@@ -1,6 +1,7 @@
 
 #include "fsl_gpio.h"
 #include "fsl_iomuxc.h"
+#include "fsl_qtmr.h"
 
 #include "configuration.h"
 #include "remora.h"
@@ -13,6 +14,19 @@ extern volatile txData_t txData;
 uint8_t noDataCount;
 extern volatile bool cmdReceived;
 extern volatile bool commsStatus;
+
+float pwmSP, pwmSPold;
+
+#define confine(value, min, max) (((value) < (min))?(min):(((value) > (max))?(max):(value)))
+
+/* The QTMR instance/channel used for board */
+#define QTMR_BASEADDR              TMR1
+#define QTMR_PWM_CHANNEL           kQTMR_Channel_0
+
+/* QTMR Clock source divider for Ipg clock source, the value of two macros below should be aligned. */
+#define QTMR_PRIMARY_SOURCE       (kQTMR_ClockDivide_32)
+#define QTMR_CLOCK_SOURCE_DIVIDER (32U)
+
 
 void configServoThread()
 {
@@ -79,6 +93,16 @@ void configServoThread()
 	GPIO_PinInit(OUT8_PORT, OUT8_PIN, &output_config);
 	GPIO_PinInit(OUT9_PORT, OUT9_PIN, &output_config);
 	GPIO_PinInit(OUT10_PORT, OUT10_PIN, &output_config);
+
+	// VSD PWM -> Analog 0-10V
+	IOMUXC_SetPinMux(IOMUXC_GPIO_B0_00_TMR1_TIMER0, 0U);
+	IOMUXC_SetPinConfig(IOMUXC_GPIO_B0_00_TMR1_TIMER0, 0x10B0U);
+
+    qtmr_config_t qtmrConfig;
+
+    QTMR_GetDefaultConfig(&qtmrConfig);
+    qtmrConfig.primarySource = QTMR_PRIMARY_SOURCE;
+    QTMR_Init(QTMR_BASEADDR, QTMR_PWM_CHANNEL, &qtmrConfig);
 }
 
 
@@ -87,6 +111,7 @@ void updateServoThread()
 	monitorEthernet();
 	readInputs();
 	setOutputs();
+	updatePWM();
 }
 
 
@@ -194,5 +219,101 @@ void setOutputs()
 
 	output = rxData.outputs & (1 << 9);
 	GPIO_PinWrite(OUT10_PORT, OUT10_PIN, output);
+}
 
+
+void updatePWM()
+{
+	pwmSP = confine(rxData.setPoint[0], 0.0, 100.0);
+
+	if (pwmSP != pwmSPold)
+	{
+		setupPWM(pwmSP);
+		pwmSPold = pwmSP;
+	}
+}
+
+
+void setupPWM(float dutyCyclePercent)
+{
+	TMR_Type *base = QTMR_BASEADDR;
+	qtmr_channel_selection_t channel = QTMR_PWM_CHANNEL;
+	uint32_t pwmFreqHz = 100;
+	bool outputPolarity = false;
+	uint32_t srcClock_Hz = (CLOCK_GetFreq(kCLOCK_IpgClk) / QTMR_CLOCK_SOURCE_DIVIDER);
+
+    uint32_t periodCount, highCount, lowCount;
+    uint16_t reg;
+
+    // stop the timer so we can force an output state if needed
+    QTMR_StopTimer(QTMR_BASEADDR, QTMR_PWM_CHANNEL);
+
+    // manage the Quad Timer inability to handle 0 and 100% conditions
+    if (dutyCyclePercent == 0.0)
+    {
+    	// use the FORCE and VAL registers to output 0
+    	base->CHANNEL[channel].SCTRL |= (TMR_SCTRL_FORCE_MASK | TMR_SCTRL_OEN_MASK | TMR_SCTRL_VAL(0));
+    }
+    else if (dutyCyclePercent == 100.0)
+    {
+    	// use the FORCE and VAL registers to output 1
+    	base->CHANNEL[channel].SCTRL |= (TMR_SCTRL_FORCE_MASK | TMR_SCTRL_OEN_MASK | TMR_SCTRL_VAL(1));
+    }
+    else
+    {
+        /* Set OFLAG pin for output mode and force out a low on the pin */
+        base->CHANNEL[channel].SCTRL |= (TMR_SCTRL_FORCE_MASK | TMR_SCTRL_OEN_MASK);
+
+        /* Counter values to generate a PWM signal */
+        periodCount = srcClock_Hz / pwmFreqHz;
+        highCount   = (uint32_t) ((float)periodCount * dutyCyclePercent) / 100;
+        lowCount    = periodCount - highCount;
+
+        if (highCount > 0U)
+        {
+            highCount -= 1U;
+        }
+        if (lowCount > 0U)
+        {
+            lowCount -= 1U;
+        }
+
+        /* Setup the compare registers for PWM output */
+        base->CHANNEL[channel].COMP1 = (uint16_t)lowCount;
+        base->CHANNEL[channel].COMP2 = (uint16_t)highCount;
+
+        /* Setup the pre-load registers for PWM output */
+        base->CHANNEL[channel].CMPLD1 = (uint16_t)lowCount;
+        base->CHANNEL[channel].CMPLD2 = (uint16_t)highCount;
+
+        reg = base->CHANNEL[channel].CSCTRL;
+        /* Setup the compare load control for COMP1 and COMP2.
+         * Load COMP1 when CSCTRL[TCF2] is asserted, load COMP2 when CSCTRL[TCF1] is asserted
+         */
+        reg &= (uint16_t)(~(TMR_CSCTRL_CL1_MASK | TMR_CSCTRL_CL2_MASK));
+        reg |= (TMR_CSCTRL_CL1(kQTMR_LoadOnComp2) | TMR_CSCTRL_CL2(kQTMR_LoadOnComp1));
+        base->CHANNEL[channel].CSCTRL = reg;
+
+        if (outputPolarity)
+        {
+            /* Invert the polarity */
+            base->CHANNEL[channel].SCTRL |= TMR_SCTRL_OPS_MASK;
+        }
+        else
+        {
+            /* True polarity, no inversion */
+            base->CHANNEL[channel].SCTRL &= ~(uint16_t)TMR_SCTRL_OPS_MASK;
+        }
+
+        reg = base->CHANNEL[channel].CTRL;
+        reg &= ~(uint16_t)TMR_CTRL_OUTMODE_MASK;
+        /* Count until compare value is  reached and re-initialize the counter, toggle OFLAG output
+         * using alternating compare register
+         */
+        reg |= (TMR_CTRL_LENGTH_MASK | TMR_CTRL_OUTMODE(kQTMR_ToggleOnAltCompareReg));
+        base->CHANNEL[channel].CTRL = reg;
+
+        // restart the timer
+        QTMR_StartTimer(QTMR_BASEADDR, QTMR_PWM_CHANNEL, kQTMR_PriSrcRiseEdge);
+    }
 }

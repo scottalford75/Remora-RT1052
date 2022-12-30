@@ -78,7 +78,7 @@ int main(void)
     currentState = ST_SETUP;
     prevState = ST_RESET;
 
-    PRINTF("\r\n Remora RT1052 firmware for Novusun CNC controllers starting\r\n");
+    PRINTF("\r\n Remora RT1052 firmware for Digital Dream / Novusun CNC controllers starting\r\n");
 
     while (1)
     {
