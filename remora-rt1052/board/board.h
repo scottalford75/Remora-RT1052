@@ -17,7 +17,7 @@
  * Definitions
  ******************************************************************************/
 /*! @brief The board name */
-#define BOARD_NAME "IMXRT1050-EVKB"
+#define BOARD_NAME "Digital Dream"
 
 /* The UART to use for debug messages. */
 #define BOARD_DEBUG_UART_TYPE     kSerialPort_Uart

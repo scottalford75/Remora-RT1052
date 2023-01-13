@@ -24,13 +24,14 @@ extern rxData_t rxBuffer;
 extern volatile rxData_t rxData;
 extern volatile txData_t txData;
 extern volatile bool cmdReceived;
+extern volatile bool mpgReceived;
 
 static mdio_handle_t mdioHandle = {.ops = &enet_ops};
 static phy_handle_t phyHandle   = {.phyAddr = BOARD_ENET0_PHY_ADDRESS, .mdioHandle = &mdioHandle, .ops = &phylan8720a_ops};
 struct netif netif;
 
 void udp_data_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, const ip_addr_t *addr, u16_t port);
-
+void udp_mpg_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, const ip_addr_t *addr, u16_t port);
 
 void initEthernet(void)
 {
@@ -96,7 +97,7 @@ void udpServer_init(void)
 
    if(err == ERR_OK)
    {
-	   //udp_recv(upcb2, udp_mpg_callback, NULL);
+	   udp_recv(upcb2, udp_mpg_callback, NULL);
    }
    else
    {
@@ -161,4 +162,16 @@ void udp_data_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, const ip
 	pbuf_free(p);
 }
 
+void udp_mpg_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, const ip_addr_t *addr, u16_t port)
+{
+	// copy the UDP payload into the nvmpg structure
+	memcpy(&mpgData.payload, p->payload, p->len);
 
+	// Free the p buffer
+	pbuf_free(p);
+
+	if (mpgData.header == PRU_NVMPG)
+	{
+		mpgReceived = true;
+	}
+}
