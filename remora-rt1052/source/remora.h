@@ -1,7 +1,9 @@
 #ifndef REMORA_H
 #define REMORA_H
-#pragma pack(push, 1)
 
+#include "configuration.h"
+
+#pragma pack(push, 1)
 
 typedef union
 {
@@ -91,4 +93,5 @@ typedef union
 extern mpgData_t mpgData;
 
 #pragma pack(pop)
+
 #endif

@@ -7,15 +7,13 @@
 #include "remora.h"
 #include "servoThread.h"
 
+#include "nvmpg.h"
 
 extern volatile rxData_t rxData;
 extern volatile txData_t txData;
-
-uint8_t noDataCount;
 extern volatile bool cmdReceived;
 extern volatile bool commsStatus;
-
-float pwmSP, pwmSPold;
+extern uint8_t noDataCount;
 
 #define confine(value, min, max) (((value) < (min))?(min):(((value) > (max))?(max):(value)))
 
@@ -27,6 +25,8 @@ float pwmSP, pwmSPold;
 #define QTMR_PRIMARY_SOURCE       (kQTMR_ClockDivide_32)
 #define QTMR_CLOCK_SOURCE_DIVIDER (32U)
 
+
+float pwmSP, pwmSPold;
 
 void configServoThread()
 {
@@ -112,6 +112,7 @@ void updateServoThread()
 	readInputs();
 	setOutputs();
 	updatePWM();
+	updateNVMPG();
 }
 
 

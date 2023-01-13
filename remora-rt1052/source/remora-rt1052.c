@@ -27,6 +27,8 @@ along with this program; If not, see <http://www.gnu.org/licenses/>.
 #include "lwip/timeouts.h"
 #include "enet_ethernetif.h"
 
+#include "nvmpg.h"
+
 #include "fsl_gpio.h"
 #include "fsl_iomuxc.h"
 
@@ -39,6 +41,23 @@ along with this program; If not, see <http://www.gnu.org/licenses/>.
 #include "servoThread.h"
 
 
+// boolean
+volatile bool PRUreset;
+bool threadsRunning = false;
+volatile bool cmdReceived = false;
+volatile bool mpgReceived = false;
+volatile bool mpgSerial = false;
+volatile bool commsStatus = false;
+uint8_t noDataCount;
+
+// unions for RX, TX and MPG data
+rxData_t rxBuffer;
+volatile rxData_t rxData;
+volatile txData_t txData;
+mpgData_t mpgData;
+uint8_t mpgTxData[53] = {'\0'};
+uint8_t mpgRxData;
+
 // state machine
 enum State {
     ST_SETUP = 0,
@@ -50,17 +69,6 @@ enum State {
     ST_WDRESET
 };
 
-// boolean
-volatile bool PRUreset;
-bool threadsRunning = false;
-volatile bool cmdReceived = false;
-volatile bool commsStatus = false;
-
-
-// unions for RX, TX and MPG data
-rxData_t rxBuffer;
-volatile rxData_t rxData;
-volatile txData_t txData;
 
 
 int main(void)
@@ -71,6 +79,7 @@ int main(void)
     BOARD_InitDebugConsole();
 
     initEthernet();
+    initNVMPG();
 
     enum State currentState;
     enum State prevState;

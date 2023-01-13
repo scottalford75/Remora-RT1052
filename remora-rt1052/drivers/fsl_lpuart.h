@@ -400,6 +400,7 @@ status_t LPUART_Init(LPUART_Type *base, const lpuart_config_t *config, uint32_t 
  */
 void LPUART_Deinit(LPUART_Type *base);
 
+
 /*!
  * @brief Gets the default configuration structure.
  *

@@ -91,6 +91,9 @@ void BOARD_InitPins(void) {
   IOMUXC_SetPinConfig(IOMUXC_GPIO_B1_09_ENET_TX_EN, 0xB0E9U); 
   IOMUXC_SetPinConfig(IOMUXC_GPIO_B1_10_ENET_REF_CLK, 0x31U); 
   IOMUXC_SetPinConfig(IOMUXC_GPIO_B1_11_ENET_RX_ER, 0xB0E9U); 
+
+  IOMUXC_SetPinConfig(IOMUXC_GPIO_B1_12_LPUART5_TXD, 0x10B0U);
+  IOMUXC_SetPinConfig(IOMUXC_GPIO_B1_13_LPUART5_RXD, 0x10B0U);
 }
 
 /***********************************************************************************************************************
