@@ -9,6 +9,8 @@
 
 #include "nvmpg.h"
 
+#include "fsl_debug_console.h"
+
 extern volatile rxData_t rxData;
 extern volatile txData_t txData;
 extern volatile bool cmdReceived;
@@ -47,6 +49,8 @@ void configServoThread()
 	// Connection LED
 	GPIO_PinInit(LED_PORT, LED_PIN, &output_config);
 
+#ifdef EC300
+
 	// Inputs
 	GPIO_PinInit(FHA_PORT, FHA_PIN, &input_config);
 	GPIO_PinInit(FHB_PORT, FHB_PIN, &input_config);
@@ -82,6 +86,11 @@ void configServoThread()
 	GPIO_PinInit(EP_PORT, EP_PIN, &input_config);
 	GPIO_PinInit(INDEX_PORT, INDEX_PIN, &input_config);
 
+	GPIO_PinInit(EP_PORT, EP_PIN, &input_config);
+	GPIO_PinInit(INDEX_PORT, INDEX_PIN, &input_config);
+	GPIO_PinInit(WHA_PORT, WHA_PIN, &input_config);
+	GPIO_PinInit(WHB_PORT, WHB_PIN, &input_config);
+
 	// Outputs
 	GPIO_PinInit(OUT1_PORT, OUT1_PIN, &output_config);
 	GPIO_PinInit(OUT2_PORT, OUT2_PIN, &output_config);
@@ -93,6 +102,11 @@ void configServoThread()
 	GPIO_PinInit(OUT8_PORT, OUT8_PIN, &output_config);
 	GPIO_PinInit(OUT9_PORT, OUT9_PIN, &output_config);
 	GPIO_PinInit(OUT10_PORT, OUT10_PIN, &output_config);
+
+#endif
+#ifdef EC500
+
+#endif
 
 	// VSD PWM -> Analog 0-10V
 	IOMUXC_SetPinMux(IOMUXC_GPIO_B0_00_TMR1_TIMER0, 0U);
@@ -150,6 +164,8 @@ void readInputs()
 	// Read inputs
 	txData.inputs = 0;
 
+#ifdef EC300
+
 	// inputs are inverted
 	txData.inputs |= !GPIO_PinRead(FHA_PORT, FHA_PIN) << 0;
 	txData.inputs |= !GPIO_PinRead(FHB_PORT, FHB_PIN) << 1;
@@ -180,10 +196,14 @@ void readInputs()
 	txData.inputs |= !GPIO_PinRead(CIN_PORT, CIN_PIN) << 21; // EC300 = R1IN
 	//txData.inputs |= !GPIO_PinRead(X1IN_PORT, X1IN_PIN) << 22; //not available
 	txData.inputs |= !GPIO_PinRead(X10IN_PORT, X10IN_PIN) << 23;
-
 	txData.inputs |= !GPIO_PinRead(X100IN_PORT, X100IN_PIN) << 24;
 	txData.inputs |= !GPIO_PinRead(EP_PORT, EP_PIN) << 25;
 	txData.inputs |= !GPIO_PinRead(INDEX_PORT, INDEX_PIN) << 26;
+	txData.inputs |= !GPIO_PinRead(WHA_PORT, WHA_PIN) << 27;
+	txData.inputs |= !GPIO_PinRead(WHB_PORT, WHB_PIN) << 28;
+
+#endif
+
 }
 
 void setOutputs()
@@ -191,6 +211,7 @@ void setOutputs()
 	// Outputs
 	bool output;
 
+#ifdef EC300
 	output = rxData.outputs & (1 << 0);
 	GPIO_PinWrite(OUT1_PORT, OUT1_PIN, output);
 
@@ -220,6 +241,7 @@ void setOutputs()
 
 	output = rxData.outputs & (1 << 9);
 	GPIO_PinWrite(OUT10_PORT, OUT10_PIN, output);
+#endif
 }
 
 
@@ -253,12 +275,12 @@ void setupPWM(float dutyCyclePercent)
     if (dutyCyclePercent == 0.0)
     {
     	// use the FORCE and VAL registers to output 0
-    	base->CHANNEL[channel].SCTRL |= (TMR_SCTRL_FORCE_MASK | TMR_SCTRL_OEN_MASK | TMR_SCTRL_VAL(0));
+    	base->CHANNEL[channel].SCTRL = (TMR_SCTRL_FORCE_MASK | TMR_SCTRL_OEN_MASK | TMR_SCTRL_VAL(0));
     }
     else if (dutyCyclePercent == 100.0)
     {
     	// use the FORCE and VAL registers to output 1
-    	base->CHANNEL[channel].SCTRL |= (TMR_SCTRL_FORCE_MASK | TMR_SCTRL_OEN_MASK | TMR_SCTRL_VAL(1));
+    	base->CHANNEL[channel].SCTRL = (TMR_SCTRL_FORCE_MASK | TMR_SCTRL_OEN_MASK | TMR_SCTRL_VAL(1));
     }
     else
     {
@@ -317,4 +339,5 @@ void setupPWM(float dutyCyclePercent)
         // restart the timer
         QTMR_StartTimer(QTMR_BASEADDR, QTMR_PWM_CHANNEL, kQTMR_PriSrcRiseEdge);
     }
+
 }
