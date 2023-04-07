@@ -49,8 +49,6 @@ void configServoThread()
 	// Connection LED
 	GPIO_PinInit(LED_PORT, LED_PIN, &output_config);
 
-#ifdef EC300
-
 	// Inputs
 	GPIO_PinInit(FHA_PORT, FHA_PIN, &input_config);
 	GPIO_PinInit(FHB_PORT, FHB_PIN, &input_config);
@@ -72,41 +70,56 @@ void configServoThread()
 	GPIO_PinInit(IN11_PORT, IN11_PIN, &input_config);
 	GPIO_PinInit(IN12_PORT, IN12_PIN, &input_config);
 
+#ifdef EC300
 	GPIO_PinInit(XIN_PORT, XIN_PIN, &input_config);
 	GPIO_PinInit(YIN_PORT, YIN_PIN, &input_config);
 	GPIO_PinInit(ZIN_PORT, ZIN_PIN, &input_config);
 	GPIO_PinInit(AIN_PORT, AIN_PIN, &input_config);
 
-	//GPIO_PinInit(BIN_PORT, BIN_PIN, &input_config);
+	//GPIO_PinInit(BIN_PORT, BIN_PIN, &input_config); // not available on NVEM/EC300
 	GPIO_PinInit(CIN_PORT, CIN_PIN, &input_config);
-	//GPIO_PinInit(X1IN_PORT, X1IN_PIN, &input_config);
+	//GPIO_PinInit(X1IN_PORT, X1IN_PIN, &input_config); // not available on NVEM/EC300
 	GPIO_PinInit(X10IN_PORT, X10IN_PIN, &input_config);
 
 	GPIO_PinInit(X100IN_PORT, X100IN_PIN, &input_config);
 	GPIO_PinInit(EP_PORT, EP_PIN, &input_config);
 	GPIO_PinInit(INDEX_PORT, INDEX_PIN, &input_config);
+#endif
 
-	GPIO_PinInit(EP_PORT, EP_PIN, &input_config);
-	GPIO_PinInit(INDEX_PORT, INDEX_PIN, &input_config);
 	GPIO_PinInit(WHA_PORT, WHA_PIN, &input_config);
 	GPIO_PinInit(WHB_PORT, WHB_PIN, &input_config);
 
+#ifdef EC500
+	// additional inputs for EC500
+	GPIO_PinInit(IN13_PORT, IN13_PIN, &input_config);
+	GPIO_PinInit(IN14_PORT, IN14_PIN, &input_config);
+	GPIO_PinInit(IN15_PORT, IN15_PIN, &input_config);
+	GPIO_PinInit(IN16_PORT, IN16_PIN, &input_config);
+#endif
+
 	// Outputs
-	GPIO_PinInit(OUT1_PORT, OUT1_PIN, &output_config);
-	GPIO_PinInit(OUT2_PORT, OUT2_PIN, &output_config);
-	GPIO_PinInit(OUT3_PORT, OUT3_PIN, &output_config);
-	GPIO_PinInit(OUT4_PORT, OUT4_PIN, &output_config);
-	GPIO_PinInit(OUT5_PORT, OUT5_PIN, &output_config);
-	GPIO_PinInit(OUT6_PORT, OUT6_PIN, &output_config);
-	GPIO_PinInit(OUT7_PORT, OUT7_PIN, &output_config);
-	GPIO_PinInit(OUT8_PORT, OUT8_PIN, &output_config);
-	GPIO_PinInit(OUT9_PORT, OUT9_PIN, &output_config);
+	GPIO_PinInit(OUT01_PORT, OUT01_PIN, &output_config);
+	GPIO_PinInit(OUT02_PORT, OUT02_PIN, &output_config);
+	GPIO_PinInit(OUT03_PORT, OUT03_PIN, &output_config);
+	GPIO_PinInit(OUT04_PORT, OUT04_PIN, &output_config);
+	GPIO_PinInit(OUT05_PORT, OUT05_PIN, &output_config);
+	GPIO_PinInit(OUT06_PORT, OUT06_PIN, &output_config);
+	GPIO_PinInit(OUT07_PORT, OUT07_PIN, &output_config);
+	GPIO_PinInit(OUT08_PORT, OUT08_PIN, &output_config);
+	GPIO_PinInit(OUT09_PORT, OUT09_PIN, &output_config);
 	GPIO_PinInit(OUT10_PORT, OUT10_PIN, &output_config);
 
-#endif
 #ifdef EC500
-
+	// additional outputs for EC500
+	GPIO_PinInit(OUT11_PORT, OUT11_PIN, &output_config);
+	GPIO_PinInit(OUT12_PORT, OUT12_PIN, &output_config);
+	GPIO_PinInit(OUT13_PORT, OUT13_PIN, &output_config);
+	GPIO_PinInit(OUT14_PORT, OUT14_PIN, &output_config);
+	GPIO_PinInit(OUT15_PORT, OUT15_PIN, &output_config);
+	GPIO_PinInit(OUT16_PORT, OUT16_PIN, &output_config);
 #endif
+
+
 
 	// VSD PWM -> Analog 0-10V
 	IOMUXC_SetPinMux(IOMUXC_GPIO_B0_00_TMR1_TIMER0, 0U);
@@ -164,8 +177,6 @@ void readInputs()
 	// Read inputs
 	txData.inputs = 0;
 
-#ifdef EC300
-
 	// inputs are inverted
 	txData.inputs |= !GPIO_PinRead(FHA_PORT, FHA_PIN) << 0;
 	txData.inputs |= !GPIO_PinRead(FHB_PORT, FHB_PIN) << 1;
@@ -187,6 +198,18 @@ void readInputs()
 	txData.inputs |= !GPIO_PinRead(IN11_PORT, IN11_PIN) << 14;
 	txData.inputs |= !GPIO_PinRead(IN12_PORT, IN12_PIN) << 15;
 
+#ifdef EC500
+	// additional inputs for EC500
+	txData.inputs |= !GPIO_PinRead(IN13_PORT, IN13_PIN) << 16;
+	txData.inputs |= !GPIO_PinRead(IN14_PORT, IN14_PIN) << 17;
+	txData.inputs |= !GPIO_PinRead(IN15_PORT, IN15_PIN) << 18;
+	txData.inputs |= !GPIO_PinRead(IN16_PORT, IN16_PIN) << 19;
+
+	txData.inputs |= !GPIO_PinRead(WHA_PORT, WHA_PIN) << 27;
+	txData.inputs |= !GPIO_PinRead(WHB_PORT, WHB_PIN) << 28;
+#endif
+
+#ifdef EC300
 	txData.inputs |= !GPIO_PinRead(XIN_PORT, XIN_PIN) << 16;
 	txData.inputs |= !GPIO_PinRead(YIN_PORT, YIN_PIN) << 17;
 	txData.inputs |= !GPIO_PinRead(ZIN_PORT, ZIN_PIN) << 18;
@@ -201,7 +224,6 @@ void readInputs()
 	txData.inputs |= !GPIO_PinRead(INDEX_PORT, INDEX_PIN) << 26;
 	txData.inputs |= !GPIO_PinRead(WHA_PORT, WHA_PIN) << 27;
 	txData.inputs |= !GPIO_PinRead(WHB_PORT, WHB_PIN) << 28;
-
 #endif
 
 }
@@ -211,37 +233,57 @@ void setOutputs()
 	// Outputs
 	bool output;
 
-#ifdef EC300
 	output = rxData.outputs & (1 << 0);
-	GPIO_PinWrite(OUT1_PORT, OUT1_PIN, output);
+	GPIO_PinWrite(OUT01_PORT, OUT01_PIN, output);
 
 	output = rxData.outputs & (1 << 1);
-	GPIO_PinWrite(OUT2_PORT, OUT2_PIN, output);
+	GPIO_PinWrite(OUT02_PORT, OUT02_PIN, output);
 
 	output = rxData.outputs & (1 << 2);
-	GPIO_PinWrite(OUT3_PORT, OUT3_PIN, output);
+	GPIO_PinWrite(OUT03_PORT, OUT03_PIN, output);
 
 	output = rxData.outputs & (1 << 3);
-	GPIO_PinWrite(OUT4_PORT, OUT4_PIN, output);
+	GPIO_PinWrite(OUT04_PORT, OUT04_PIN, output);
 
 	output = rxData.outputs & (1 << 4);
-	GPIO_PinWrite(OUT5_PORT, OUT5_PIN, output);
+	GPIO_PinWrite(OUT05_PORT, OUT05_PIN, output);
 
 	output = rxData.outputs & (1 << 5);
-	GPIO_PinWrite(OUT6_PORT, OUT6_PIN, output);
+	GPIO_PinWrite(OUT06_PORT, OUT06_PIN, output);
 
 	output = rxData.outputs & (1 << 6);
-	GPIO_PinWrite(OUT7_PORT, OUT7_PIN, output);
+	GPIO_PinWrite(OUT07_PORT, OUT07_PIN, output);
 
 	output = rxData.outputs & (1 << 7);
-	GPIO_PinWrite(OUT8_PORT, OUT8_PIN, output);
+	GPIO_PinWrite(OUT08_PORT, OUT08_PIN, output);
 
 	output = rxData.outputs & (1 << 8);
-	GPIO_PinWrite(OUT9_PORT, OUT9_PIN, output);
+	GPIO_PinWrite(OUT09_PORT, OUT09_PIN, output);
 
 	output = rxData.outputs & (1 << 9);
 	GPIO_PinWrite(OUT10_PORT, OUT10_PIN, output);
+
+#ifdef EC500
+	// additional inputs for EC500
+	output = rxData.outputs & (1 << 10);
+	GPIO_PinWrite(OUT11_PORT, OUT11_PIN, output);
+
+	output = rxData.outputs & (1 << 11);
+	GPIO_PinWrite(OUT12_PORT, OUT12_PIN, output);
+
+	output = rxData.outputs & (1 << 12);
+	GPIO_PinWrite(OUT13_PORT, OUT13_PIN, output);
+
+	output = rxData.outputs & (1 << 13);
+	GPIO_PinWrite(OUT14_PORT, OUT14_PIN, output);
+
+	output = rxData.outputs & (1 << 14);
+	GPIO_PinWrite(OUT15_PORT, OUT15_PIN, output);
+
+	output = rxData.outputs & (1 << 15);
+	GPIO_PinWrite(OUT16_PORT, OUT16_PIN, output);
 #endif
+
 }
 
 
