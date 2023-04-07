@@ -87,7 +87,13 @@ int main(void)
     currentState = ST_SETUP;
     prevState = ST_RESET;
 
-    PRINTF("\r\n Remora RT1052 firmware for Digital Dream / Novusun CNC controllers starting\r\n");
+#ifdef EC300
+    PRINTF("\r\n Remora RT1052 firmware for NVEM / EC300 CNC controller starting\r\n");
+#endif
+
+#ifdef EC500
+    PRINTF("\r\n Remora RT1052 firmware for EC500 CNC controller starting\r\n");
+#endif
 
     while (1)
     {
@@ -103,7 +109,7 @@ int main(void)
 				  createThreads();
 				  configServoThread();
 				  configBaseThread();
-				  startThreads();
+
 				  udpServer_init();
 
 				  currentState = ST_START;
@@ -120,12 +126,8 @@ int main(void)
 				  if (!threadsRunning)
 				  {
 					  // Start the threads
-					  PRINTF("\n  Starting the BASE thread\n");
-					  //baseThread->startThread();
-
-					  PRINTF("\n  Starting the SERVO thread\n");
-					  //servoThread->startThread();
-
+					  PRINTF("\n  Starting the threads\n");
+					  startThreads();
 					  threadsRunning = true;
 				  }
 
