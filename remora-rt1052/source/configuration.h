@@ -26,9 +26,10 @@
 #define LED_PORT 	GPIO3
 #define LED_PIN 	0
 
-// Comment out one of the following to build for EC300 / NVEM or EC500
-//#define EC300
-#define EC500
+// Comment out one of the following to build for EC300, NVEM or EC500
+//#define NVEM
+#define EC300
+//#define EC500
 
 // Step and Directions pins
 #define STEP_PORT	GPIO1
@@ -45,7 +46,7 @@
 #define C_STEP_PIN	20
 #define C_DIR_PIN	19
 
-#ifdef EC300
+#if defined(NVEM) || defined(EC300)
 
 // Inputs
 #define FHA_PORT	GPIO3
@@ -111,10 +112,21 @@
 
 
 // Outputs
+
+#ifdef NVEM
+#define OUT01_PORT	GPIO4
+#define OUT01_PIN	1
+#define OUT02_PORT	GPIO4
+#define OUT02_PIN	2
+#endif
+
+#ifdef EC300
 #define OUT01_PORT	GPIO4
 #define OUT01_PIN	2
 #define OUT02_PORT	GPIO4
 #define OUT02_PIN	1
+#endif
+
 #define OUT03_PORT	GPIO4
 #define OUT03_PIN	3
 #define OUT04_PORT	GPIO4
