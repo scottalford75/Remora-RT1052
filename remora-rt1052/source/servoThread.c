@@ -70,7 +70,7 @@ void configServoThread()
 	GPIO_PinInit(IN11_PORT, IN11_PIN, &input_config);
 	GPIO_PinInit(IN12_PORT, IN12_PIN, &input_config);
 
-#ifdef EC300
+#if defined(NVEM) || defined(EC300)
 	GPIO_PinInit(XIN_PORT, XIN_PIN, &input_config);
 	GPIO_PinInit(YIN_PORT, YIN_PIN, &input_config);
 	GPIO_PinInit(ZIN_PORT, ZIN_PIN, &input_config);
@@ -209,7 +209,7 @@ void readInputs()
 	txData.inputs |= !GPIO_PinRead(WHB_PORT, WHB_PIN) << 28;
 #endif
 
-#ifdef EC300
+#if defined(NVEM) || defined(EC300)
 	txData.inputs |= !GPIO_PinRead(XIN_PORT, XIN_PIN) << 16;
 	txData.inputs |= !GPIO_PinRead(YIN_PORT, YIN_PIN) << 17;
 	txData.inputs |= !GPIO_PinRead(ZIN_PORT, ZIN_PIN) << 18;
