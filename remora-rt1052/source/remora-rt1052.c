@@ -87,7 +87,7 @@ int main(void)
     currentState = ST_SETUP;
     prevState = ST_RESET;
 
-#ifdef EC300
+#if defined(NVEM) || defined(EC300)
     PRINTF("\r\n Remora RT1052 firmware for NVEM / EC300 CNC controller starting\r\n");
 #endif
 
