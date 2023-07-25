@@ -28,8 +28,8 @@
 
 // Comment out one of the following to build for EC300, NVEM or EC500
 //#define NVEM
-#define EC300
-//#define EC500
+//#define EC300
+#define EC500
 
 // Step and Directions pins
 #define STEP_PORT	GPIO1
